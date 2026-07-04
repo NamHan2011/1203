@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đếm Ngược Thời Gian</title>
+    <style>
+        /* Toàn bộ giao diện (CSS) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .container {
+            padding: 20px;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .countdown-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .time-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 110px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: transform 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: translateY(-5px);
+            border-color: #00f2fe;
+        }
+
+        .number {
+            font-size: 3rem;
+            font-weight: bold;
+            display: block;
+            color: #00f2fe;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        .label {
+            font-size: 0.85rem;
+            color: #a0a0c0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        /* Hiệu ứng mờ ảo phía sau */
+        .background-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: #4facfe;
+            filter: blur(150px);
+            opacity: 0.2;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-glow"></div>
+
+    <div class="container">
+        <h1 id="title">Đang đếm ngược đến sự kiện...</h1>
+
+        <div class="countdown-wrapper">
+            <div class="time-box">
+                <span class="number" id="days">00</span>
+                <span class="label">Ngày</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="hours">00</span>
+                <span class="label">Giờ</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="minutes">00</span>
+                <span class="label">Phút</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="seconds">00</span>
+                <span class="label">Giây</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cấu hình thời gian (JavaScript)
+        // ⚠️ BẠN HÃY SỬA NGÀY THÁNG CỦA BẠN TẠI ĐÂY (Định dạng: Tháng Ngày, Năm Giờ:Phút:Giây)
+        const targetDate = new Date("December 3, 2026 00:00:00").getTime();
+        
+        // Bạn có thể đổi tiêu đề hiển thị ở đây
+        document.getElementById("title").innerText = "Đếm ngược đến sự kiện đặc biệt";
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            // Nếu đã qua thời gian đếm ngược
+            if (difference < 0) {
+                document.getElementById("title").innerText = "Sự kiện đã diễn ra!";
+                document.getElementById("days").innerText = "00";
+                document.getElementById("hours").innerText = "00";
+                document.getElementById("minutes").innerText = "00";
+                document.getElementById("seconds").innerText = "00";
+                return;
+            }
+
+            // Tính toán Ngày, Giờ, Phút, Giây
+            const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const h = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((difference % (1000 * 60)) / 1000);
+
+            // Hiển thị ra màn hình (thêm số 0 ở đầu nếu nhỏ hơn 10)
+            document.getElementById("days").innerText = d < 10 ? "0" + d : d;
+            document.getElementById("hours").innerText = h < 10 ? "0" + h : h;
+            document.getElementById("minutes").innerText = m < 10 ? "0" + m : m;
+            document.getElementById("seconds").innerText = s < 10 ? "0" + s : s;
+        }
+
+        // Chạy hàm cập nhật mỗi 1 giây
+        setInterval(updateCountdown, 1000);
+        updateCountdown(); // Chạy ngay lập tức khi load trang
+    </script>
+</body>
+</html>
