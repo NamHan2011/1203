@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotus:3</title>
+    <title>Đếm Ngược</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -284,4 +284,35 @@
                 } else {
                     // Trạng thái trượt trên kính
                     d.y += d.speedY;
-                    d.r -= 0.03; // Giọt nước nhỏ dần
+                    d.r -= 0.03; // Giọt nước nhỏ dần vì để lại vệt nước
+                    
+                    // Vẽ vệt nước đuôi mờ mờ
+                    ctx.fillStyle = 'rgba(200, 230, 255, 0.15)';
+                    ctx.beginPath();
+                    ctx.arc(d.x, d.y - d.r * 2, d.r * 0.8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Khởi tạo lại giọt mới nếu rơi quá màn hình hoặc quá nhỏ
+                    if (d.y > height + 20 || d.r < 0.5) {
+                        Object.assign(d, createGlassDrop(false));
+                        d.x = Math.random() * width;
+                        d.y = Math.random() * (height * 0.7); // Tái tạo ngẫu nhiên nửa trên
+                    }
+                }
+            });
+        }
+
+        // LOOP RENDER
+        function animate() {
+            if (currentEffect === 'snow') {
+                drawSnow();
+            } else if (currentEffect === 'rain') {
+                drawRain();
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+        
+    </script>
+</body>
+</html>
