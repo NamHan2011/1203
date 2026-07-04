@@ -25,60 +25,6 @@
             overflow: hidden;
             position: relative;
         }
-
-        /* Nút chọn hiệu ứng ở góc phải */
-        .effect-selector {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            border: 1px solid rgba(255, 102, 204, 0.4);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1rem;
-            outline: none;
-            cursor: pointer;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 10px rgba(255, 102, 204, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .effect-selector:hover {
-            border-color: rgba(255, 102, 204, 0.8);
-            box-shadow: 0 0 15px rgba(255, 102, 204, 0.5);
-        }
-
-        /* Tùy chỉnh màu nền cho các tùy chọn bên trong select */
-        .effect-selector option {
-            background-color: #111;
-            color: #fff;
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .container {
-            z-index: 1;
-            text-align: center;
-        }
-
-        .timer {
-            display: flex;
-            gap: 25px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
         /* Giao diện Kính mờ với hiệu ứng Glow Hồng */
         .time-box {
             background: rgba(255, 255, 255, 0.03);
@@ -241,67 +187,6 @@
             }
             ctx.fill();
         }
-
-        // 2. SETUP MƯA ĐỌNG KÍNH
-        let glassDrops = [];
-        for (let i = 0; i < 120; i++) {
-            glassDrops.push(createGlassDrop(true));
-        }
-
-        function createGlassDrop(randomY = false) {
-            return {
-                x: Math.random() * width,
-                y: randomY ? Math.random() * height : -20,
-                r: Math.random() * 1.5 + 0.5, // Bán kính
-                targetR: Math.random() * 4 + 2, // Kích thước tối đa trước khi rơi
-                waitTimer: Math.random() * 300 + 50, // Thời gian đợi tích nước
-                isFalling: false,
-                speedY: 0
-            };
-        }
-
-        function drawRain() {
-            ctx.clearRect(0, 0, width, height);
-            
-            glassDrops.forEach(d => {
-                // Tạo hình giọt nước có độ trong suốt
-                ctx.fillStyle = 'rgba(200, 230, 255, 0.4)';
-                ctx.beginPath();
-                ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-                ctx.fill();
-
-                if (!d.isFalling) {
-                    // Trạng thái tụ nước trên kính
-                    d.waitTimer--;
-                    if (d.r < d.targetR) {
-                        d.r += 0.005; // Giọt nước to dần
-                    }
-                    // Nếu đủ nặng và hết thời gian chờ -> Trượt xuống
-                    if (d.waitTimer <= 0 && d.r >= d.targetR) {
-                        d.isFalling = true;
-                        d.speedY = Math.random() * 4 + 3;
-                    }
-                } else {
-                    // Trạng thái trượt trên kính
-                    d.y += d.speedY;
-                    d.r -= 0.03; // Giọt nước nhỏ dần vì để lại vệt nước
-                    
-                    // Vẽ vệt nước đuôi mờ mờ
-                    ctx.fillStyle = 'rgba(200, 230, 255, 0.15)';
-                    ctx.beginPath();
-                    ctx.arc(d.x, d.y - d.r * 2, d.r * 0.8, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Khởi tạo lại giọt mới nếu rơi quá màn hình hoặc quá nhỏ
-                    if (d.y > height + 20 || d.r < 0.5) {
-                        Object.assign(d, createGlassDrop(false));
-                        d.x = Math.random() * width;
-                        d.y = Math.random() * (height * 0.7); // Tái tạo ngẫu nhiên nửa trên
-                    }
-                }
-            });
-        }
-
         // LOOP RENDER
         function animate() {
             if (currentEffect === 'snow') {
