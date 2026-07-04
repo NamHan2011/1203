@@ -3,163 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đếm Ngược Thời Gian</title>
+    <title>Lotus</title>
     <style>
-        /* Toàn bộ giao diện (CSS) */
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            background-color: #000000;
+            /* Tự động tạo nền lưới caro giống hệt ảnh của bạn */
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.25) 1px, transparent 1px);
+            background-size: 40px 40px; /* Kích thước ô vuông */
+            color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
-            color: #fff;
-            min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
+            height: 100vh;
             overflow: hidden;
         }
 
+        /* Lớp canvas để vẽ tuyết rơi */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Hộp chứa nội dung nổi lên trên nền */
         .container {
-            padding: 20px;
             z-index: 1;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 50px 70px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
+            font-size: 5rem;
+            margin: 0 0 30px 0;
+            letter-spacing: 10px;
             text-transform: uppercase;
-            background: linear-gradient(45deg, #00f2fe, #4facfe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+            /* Hiệu ứng phát sáng nhẹ màu hồng sen cho chữ Lotus */
+            text-shadow: 0 0 10px #fff, 0 0 20px #ffb3e6, 0 0 40px #ff66cc; 
         }
 
-        .countdown-wrapper {
+        .timer {
             display: flex;
+            gap: 25px;
             justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
         }
 
         .time-box {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            min-width: 110px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: transform 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px 25px;
+            border-radius: 12px;
+            min-width: 90px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .time-box:hover {
-            transform: translateY(-5px);
-            border-color: #00f2fe;
-        }
-
-        .number {
-            font-size: 3rem;
-            font-weight: bold;
+        .time-box span {
             display: block;
-            color: #00f2fe;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 15px #00ffff; /* Số đếm sáng màu xanh Cyan */
         }
 
-        .label {
-            font-size: 0.85rem;
-            color: #a0a0c0;
+        .time-box p {
+            margin: 10px 0 0;
+            font-size: 1.1rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 5px;
-        }
-
-        /* Hiệu ứng mờ ảo phía sau */
-        .background-glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: #4facfe;
-            filter: blur(150px);
-            opacity: 0.2;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 0;
+            letter-spacing: 2px;
+            color: #cccccc;
         }
     </style>
 </head>
 <body>
-
-    <div class="background-glow"></div>
-
+    <canvas id="snow"></canvas>
+    
     <div class="container">
-        <h1 id="title">Đang đếm ngược đến sự kiện...</h1>
-
-        <div class="countdown-wrapper">
+        <h1>Lotus</h1>
+        <div class="timer">
             <div class="time-box">
-                <span class="number" id="days">00</span>
-                <span class="label">Ngày</span>
+                <span id="days">00</span>
+                <p>Ngày</p>
             </div>
             <div class="time-box">
-                <span class="number" id="hours">00</span>
-                <span class="label">Giờ</span>
+                <span id="hours">00</span>
+                <p>Giờ</p>
             </div>
             <div class="time-box">
-                <span class="number" id="minutes">00</span>
-                <span class="label">Phút</span>
+                <span id="minutes">00</span>
+                <p>Phút</p>
             </div>
             <div class="time-box">
-                <span class="number" id="seconds">00</span>
-                <span class="label">Giây</span>
+                <span id="seconds">00</span>
+                <p>Giây</p>
             </div>
         </div>
     </div>
 
     <script>
-        // Cấu hình thời gian (JavaScript)
-        // ⚠️ BẠN HÃY SỬA NGÀY THÁNG CỦA BẠN TẠI ĐÂY (Định dạng: Tháng Ngày, Năm Giờ:Phút:Giây)
-        const targetDate = new Date("December 3, 2026 00:00:00").getTime();
-        
-        // Bạn có thể đổi tiêu đề hiển thị ở đây
-        document.getElementById("title").innerText = "Đếm ngược đến sự kiện đặc biệt";
+        // --- CÀI ĐẶT THỜI GIAN ---
+        // Bạn có thể sửa năm 2026 thành năm bạn muốn bắt đầu đếm
+        const startDate = new Date('March 12, 2026 07:00:00').getTime();
 
-        function updateCountdown() {
+        function updateTimer() {
             const now = new Date().getTime();
-            const difference = targetDate - now;
+            const difference = now - startDate;
 
-            // Nếu đã qua thời gian đếm ngược
+            // Nếu thời gian ở tương lai (chưa tới mốc) thì hiển thị 0
             if (difference < 0) {
-                document.getElementById("title").innerText = "Sự kiện đã diễn ra!";
-                document.getElementById("days").innerText = "00";
-                document.getElementById("hours").innerText = "00";
-                document.getElementById("minutes").innerText = "00";
-                document.getElementById("seconds").innerText = "00";
+                document.getElementById('days').innerText = "00";
+                document.getElementById('hours').innerText = "00";
+                document.getElementById('minutes').innerText = "00";
+                document.getElementById('seconds').innerText = "00";
                 return;
             }
 
-            // Tính toán Ngày, Giờ, Phút, Giây
-            const d = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const h = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((difference % (1000 * 60)) / 1000);
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-            // Hiển thị ra màn hình (thêm số 0 ở đầu nếu nhỏ hơn 10)
-            document.getElementById("days").innerText = d < 10 ? "0" + d : d;
-            document.getElementById("hours").innerText = h < 10 ? "0" + h : h;
-            document.getElementById("minutes").innerText = m < 10 ? "0" + m : m;
-            document.getElementById("seconds").innerText = s < 10 ? "0" + s : s;
+            document.getElementById('days').innerText = days < 10 ? '0' + days : days;
+            document.getElementById('hours').innerText = hours < 10 ? '0' + hours : hours;
+            document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
         }
 
-        // Chạy hàm cập nhật mỗi 1 giây
-        setInterval(updateCountdown, 1000);
-        updateCountdown(); // Chạy ngay lập tức khi load trang
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        // --- HIỆU ỨNG TUYẾT RƠI (CANVAS) ---
+        const canvas = document.getElementById('snow');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        let particles = [];
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        // Tạo 150 bông tuyết
+        for (let i = 0; i < 150; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                r: Math.random() * 3 + 1, // Kích thước
+                d: Math.random() * 150,
+                speedY: Math.random() * 1 + 0.5, // Tốc độ rơi thẳng
+                speedX: Math.random() * 2 - 1 // Tốc độ bay ngang
+            });
+        }
+
+        function drawSnowflakes() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                ctx.moveTo(p.x, p.y);
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+            }
+            ctx.fill();
+            updateSnowflakes();
+        }
+
+        function updateSnowflakes() {
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.y += p.speedY;
+                p.x += p.speedX;
+
+                // Nếu tuyết rơi khỏi màn hình thì cho xuất hiện lại ở trên cùng
+                if (p.y > height) {
+                    particles[i] = { x: Math.random() * width, y: -10, r: p.r, d: p.d, speedY: p.speedY, speedX: p.speedX };
+                }
+            }
+        }
+
+        setInterval(drawSnowflakes, 30); // Tốc độ làm mới khung hình
     </script>
 </body>
 </html>
