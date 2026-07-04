@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotus</title>
-    <!-- Nhúng Font chữ hiện đại từ Google Fonts -->
+    <title>Đếm Ngược</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             padding: 0;
             background-color: #050505;
-            /* Tạo nền lưới kẻ caro tối giản giống ảnh của bạn */
+            /* Nền lưới kẻ caro */
             background-image:
                 linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
@@ -24,6 +23,38 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* Nút chọn hiệu ứng ở góc phải */
+        .effect-selector {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 102, 204, 0.4);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 10px rgba(255, 102, 204, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .effect-selector:hover {
+            border-color: rgba(255, 102, 204, 0.8);
+            box-shadow: 0 0 15px rgba(255, 102, 204, 0.5);
+        }
+
+        /* Tùy chỉnh màu nền cho các tùy chọn bên trong select */
+        .effect-selector option {
+            background-color: #111;
+            color: #fff;
         }
 
         canvas {
@@ -41,66 +72,71 @@
             text-align: center;
         }
 
-        h1 {
-            font-size: 5.5rem;
-            margin: 0 0 40px 0;
-            font-weight: 700;
-            letter-spacing: 15px;
-            text-transform: uppercase;
-            background: linear-gradient(120deg, #ffffff, #ffb3e6, #ff66cc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px rgba(255, 102, 204, 0.6));
-        }
-
         .timer {
             display: flex;
-            gap: 20px;
+            gap: 25px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
-        /* Giao diện Kính mờ (Glassmorphism) cực sang */
+        /* Giao diện Kính mờ với hiệu ứng Glow Hồng */
         .time-box {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: 25px 30px;
+            padding: 30px 35px;
             border-radius: 16px;
-            min-width: 100px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: transform 0.3s ease;
+            min-width: 110px;
+            /* Viền và bóng phát sáng nhẹ mặc định */
+            border: 1px solid rgba(255, 102, 204, 0.3);
+            box-shadow: 0 0 15px rgba(255, 102, 204, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: default;
         }
 
+        /* Khi di chuột vào: Sáng rực rỡ và nảy lên */
         .time-box:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 102, 204, 0.4);
+            transform: translateY(-10px);
+            border-color: rgba(255, 102, 204, 1);
+            background: rgba(255, 102, 204, 0.08);
+            box-shadow: 
+                0 0 35px rgba(255, 102, 204, 0.7), 
+                inset 0 0 20px rgba(255, 102, 204, 0.3);
         }
 
         .time-box span {
             display: block;
-            font-size: 3.8rem;
+            font-size: 4.5rem;
             font-weight: 700;
             color: #ffffff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            transition: text-shadow 0.3s ease;
+        }
+
+        .time-box:hover span {
+            text-shadow: 0 0 20px #ffffff;
         }
 
         .time-box p {
-            margin: 12px 0 0;
-            font-size: 0.9rem;
+            margin: 15px 0 0;
+            font-size: 1rem;
             font-weight: 400;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            color: #a0a0a0;
+            letter-spacing: 4px;
+            color: #cccccc;
         }
     </style>
 </head>
 <body>
-    <canvas id="snow"></canvas>
+    
+    <select id="effect-select" class="effect-selector">
+        <option value="snow">❄️ Hiệu ứng Tuyết rơi</option>
+        <option value="rain">💧 Mưa đọng mặt kính</option>
+    </select>
+
+    <canvas id="canvas"></canvas>
     
     <div class="container">
-        <h1>Lotus</h1>
         <div class="timer">
             <div class="time-box">
                 <span id="days">00</span>
@@ -122,13 +158,12 @@
     </div>
 
     <script>
-        // Thiết lập thời gian gốc: 7h sáng ngày 12 tháng 3 năm 2026
+        // THIẾT LẬP THỜI GIAN ĐẾM NGƯỢC (12/03/2026 07:00:00)
         const startDate = new Date('March 12, 2026 07:00:00').getTime();
 
         function updateTimer() {
             const now = new Date().getTime();
             const difference = now - startDate;
-
             if (difference < 0) return;
 
             const days = Math.floor(difference / (1000 * 60 * 60 * 24));
@@ -141,61 +176,143 @@
             document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
             document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
         }
-
         setInterval(updateTimer, 1000);
         updateTimer();
 
-        // Hiệu ứng tuyết rơi mượt mà
-        const canvas = document.getElementById('snow');
+
+        // HỆ THỐNG HIỆU ỨNG CANVAS
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
-        let particles = [];
+
+        let currentEffect = 'snow';
+        const effectSelect = document.getElementById('effect-select');
+        
+        effectSelect.addEventListener('change', (e) => {
+            currentEffect = e.target.value;
+        });
 
         window.addEventListener('resize', () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
         });
 
-        for (let i = 0; i < 120; i++) {
-            particles.push({
+        // 1. SETUP TUYẾT RƠI (Chân thật hơn với hướng gió)
+        let snowflakes = [];
+        let angle = 0; // Góc để tạo gió lả lướt
+        for (let i = 0; i < 150; i++) {
+            snowflakes.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                r: Math.random() * 2.5 + 1,
-                speedY: Math.random() * 0.7 + 0.3,
-                speedX: Math.random() * 1 - 0.5
+                r: Math.random() * 3 + 1, // Bán kính hạt
+                d: Math.random() * 100 // Tốc độ rơi riêng biệt
             });
         }
 
-        function drawSnowflakes() {
+        function drawSnow() {
             ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.beginPath();
-            for (let i = 0; i < particles.length; i++) {
-                let p = particles[i];
+            
+            angle += 0.01;
+            for (let i = 0; i < snowflakes.length; i++) {
+                let p = snowflakes[i];
                 ctx.moveTo(p.x, p.y);
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
-            }
-            ctx.fill();
-            updateSnowflakes();
-        }
+                
+                // Tính toán di chuyển (hướng xuống + bay lượn trái phải)
+                p.y += Math.cos(angle + p.d) + 1 + p.r / 2;
+                p.x += Math.sin(angle) * 1.5;
 
-        function updateSnowflakes() {
-            for (let i = 0; i < particles.length; i++) {
-                let p = particles[i];
-                p.y += p.speedY;
-                p.x += p.speedX;
-                if (p.y > height) {
-                    particles[i] = { x: Math.random() * width, y: -10, r: p.r, speedY: p.speedY, speedX: p.speedX };
+                // Nếu hạt rơi khỏi màn hình thì đưa lên lại
+                if (p.x > width + 5 || p.x < -5 || p.y > height) {
+                    if (i % 3 > 0) { // Đưa lên đỉnh
+                        snowflakes[i] = {x: Math.random() * width, y: -10, r: p.r, d: p.d};
+                    } else {
+                        // Trôi dạt từ 2 bên cạnh
+                        if (Math.sin(angle) > 0) {
+                            snowflakes[i] = {x: -5, y: Math.random() * height, r: p.r, d: p.d};
+                        } else {
+                            snowflakes[i] = {x: width + 5, y: Math.random() * height, r: p.r, d: p.d};
+                        }
+                    }
                 }
             }
+            ctx.fill();
         }
 
-        function anim() {
-            drawSnowflakes();
-            requestAnimationFrame(anim);
+        // 2. SETUP MƯA ĐỌNG KÍNH
+        let glassDrops = [];
+        for (let i = 0; i < 120; i++) {
+            glassDrops.push(createGlassDrop(true));
         }
-        anim();
+
+        function createGlassDrop(randomY = false) {
+            return {
+                x: Math.random() * width,
+                y: randomY ? Math.random() * height : -20,
+                r: Math.random() * 1.5 + 0.5, // Bán kính
+                targetR: Math.random() * 4 + 2, // Kích thước tối đa trước khi rơi
+                waitTimer: Math.random() * 300 + 50, // Thời gian đợi tích nước
+                isFalling: false,
+                speedY: 0
+            };
+        }
+
+        function drawRain() {
+            ctx.clearRect(0, 0, width, height);
+            
+            glassDrops.forEach(d => {
+                // Tạo hình giọt nước có độ trong suốt
+                ctx.fillStyle = 'rgba(200, 230, 255, 0.4)';
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (!d.isFalling) {
+                    // Trạng thái tụ nước trên kính
+                    d.waitTimer--;
+                    if (d.r < d.targetR) {
+                        d.r += 0.005; // Giọt nước to dần
+                    }
+                    // Nếu đủ nặng và hết thời gian chờ -> Trượt xuống
+                    if (d.waitTimer <= 0 && d.r >= d.targetR) {
+                        d.isFalling = true;
+                        d.speedY = Math.random() * 4 + 3;
+                    }
+                } else {
+                    // Trạng thái trượt trên kính
+                    d.y += d.speedY;
+                    d.r -= 0.03; // Giọt nước nhỏ dần vì để lại vệt nước
+                    
+                    // Vẽ vệt nước đuôi mờ mờ
+                    ctx.fillStyle = 'rgba(200, 230, 255, 0.15)';
+                    ctx.beginPath();
+                    ctx.arc(d.x, d.y - d.r * 2, d.r * 0.8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Khởi tạo lại giọt mới nếu rơi quá màn hình hoặc quá nhỏ
+                    if (d.y > height + 20 || d.r < 0.5) {
+                        Object.assign(d, createGlassDrop(false));
+                        d.x = Math.random() * width;
+                        d.y = Math.random() * (height * 0.7); // Tái tạo ngẫu nhiên nửa trên
+                    }
+                }
+            });
+        }
+
+        // LOOP RENDER
+        function animate() {
+            if (currentEffect === 'snow') {
+                drawSnow();
+            } else if (currentEffect === 'rain') {
+                drawRain();
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+        
     </script>
 </body>
 </html>
