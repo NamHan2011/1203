@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lotus</title>
+    <!-- Nhúng Font chữ hiện đại từ Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #000000;
-            /* Tự động tạo nền lưới caro giống hệt ảnh của bạn */
+            background-color: #050505;
+            /* Tạo nền lưới kẻ caro tối giản giống ảnh của bạn */
             background-image:
-                linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.25) 1px, transparent 1px);
-            background-size: 40px 40px; /* Kích thước ô vuông */
+                linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 50px 50px; 
             color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Montserrat', sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -24,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* Lớp canvas để vẽ tuyết rơi */
         canvas {
             position: absolute;
             top: 0;
@@ -35,54 +36,63 @@
             pointer-events: none;
         }
 
-        /* Hộp chứa nội dung nổi lên trên nền */
         .container {
             z-index: 1;
             text-align: center;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 50px 70px;
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.1);
         }
 
         h1 {
-            font-size: 5rem;
-            margin: 0 0 30px 0;
-            letter-spacing: 10px;
+            font-size: 5.5rem;
+            margin: 0 0 40px 0;
+            font-weight: 700;
+            letter-spacing: 15px;
             text-transform: uppercase;
-            /* Hiệu ứng phát sáng nhẹ màu hồng sen cho chữ Lotus */
-            text-shadow: 0 0 10px #fff, 0 0 20px #ffb3e6, 0 0 40px #ff66cc; 
+            background: linear-gradient(120deg, #ffffff, #ffb3e6, #ff66cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(255, 102, 204, 0.6));
         }
 
         .timer {
             display: flex;
-            gap: 25px;
+            gap: 20px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
+        /* Giao diện Kính mờ (Glassmorphism) cực sang */
         .time-box {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px 25px;
-            border-radius: 12px;
-            min-width: 90px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 25px 30px;
+            border-radius: 16px;
+            min-width: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: transform 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 102, 204, 0.4);
         }
 
         .time-box span {
             display: block;
-            font-size: 3.5rem;
-            font-weight: bold;
-            text-shadow: 0 0 15px #00ffff; /* Số đếm sáng màu xanh Cyan */
+            font-size: 3.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
         .time-box p {
-            margin: 10px 0 0;
-            font-size: 1.1rem;
+            margin: 12px 0 0;
+            font-size: 0.9rem;
+            font-weight: 400;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #cccccc;
+            letter-spacing: 3px;
+            color: #a0a0a0;
         }
     </style>
 </head>
@@ -112,22 +122,14 @@
     </div>
 
     <script>
-        // --- CÀI ĐẶT THỜI GIAN ---
-        // Bạn có thể sửa năm 2026 thành năm bạn muốn bắt đầu đếm
+        // Thiết lập thời gian gốc: 7h sáng ngày 12 tháng 3 năm 2026
         const startDate = new Date('March 12, 2026 07:00:00').getTime();
 
         function updateTimer() {
             const now = new Date().getTime();
             const difference = now - startDate;
 
-            // Nếu thời gian ở tương lai (chưa tới mốc) thì hiển thị 0
-            if (difference < 0) {
-                document.getElementById('days').innerText = "00";
-                document.getElementById('hours').innerText = "00";
-                document.getElementById('minutes').innerText = "00";
-                document.getElementById('seconds').innerText = "00";
-                return;
-            }
+            if (difference < 0) return;
 
             const days = Math.floor(difference / (1000 * 60 * 60 * 24));
             const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -143,7 +145,7 @@
         setInterval(updateTimer, 1000);
         updateTimer();
 
-        // --- HIỆU ỨNG TUYẾT RƠI (CANVAS) ---
+        // Hiệu ứng tuyết rơi mượt mà
         const canvas = document.getElementById('snow');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -155,21 +157,19 @@
             height = canvas.height = window.innerHeight;
         });
 
-        // Tạo 150 bông tuyết
-        for (let i = 0; i < 150; i++) {
+        for (let i = 0; i < 120; i++) {
             particles.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                r: Math.random() * 3 + 1, // Kích thước
-                d: Math.random() * 150,
-                speedY: Math.random() * 1 + 0.5, // Tốc độ rơi thẳng
-                speedX: Math.random() * 2 - 1 // Tốc độ bay ngang
+                r: Math.random() * 2.5 + 1,
+                speedY: Math.random() * 0.7 + 0.3,
+                speedX: Math.random() * 1 - 0.5
             });
         }
 
         function drawSnowflakes() {
             ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.beginPath();
             for (let i = 0; i < particles.length; i++) {
                 let p = particles[i];
@@ -185,15 +185,17 @@
                 let p = particles[i];
                 p.y += p.speedY;
                 p.x += p.speedX;
-
-                // Nếu tuyết rơi khỏi màn hình thì cho xuất hiện lại ở trên cùng
                 if (p.y > height) {
-                    particles[i] = { x: Math.random() * width, y: -10, r: p.r, d: p.d, speedY: p.speedY, speedX: p.speedX };
+                    particles[i] = { x: Math.random() * width, y: -10, r: p.r, speedY: p.speedY, speedX: p.speedX };
                 }
             }
         }
 
-        setInterval(drawSnowflakes, 30); // Tốc độ làm mới khung hình
+        function anim() {
+            drawSnowflakes();
+            requestAnimationFrame(anim);
+        }
+        anim();
     </script>
 </body>
 </html>
