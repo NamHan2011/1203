@@ -95,6 +95,93 @@
   @keyframes fall-5 { 70% { transform: translate(var(--x-end), 70vh); } 100% { transform: translate(var(--x-mid), 100vh); } }
   @keyframes fall-6 { 45% { transform: translate(var(--x-end), 45vh); } 100% { transform: translate(var(--x-mid), 100vh); } }
 
+  /* ===== Menu chọn nhạc nền ===== */
+  .music-widget {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+  }
+
+  .music-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--glass-1), var(--glass-2));
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .music-btn:hover {
+    border-color: rgba(var(--glow), 0.5);
+    box-shadow: 0 8px 24px rgba(var(--glow), 0.2), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+
+  .music-panel {
+    position: absolute;
+    top: 54px;
+    right: 0;
+    width: 220px;
+    padding: 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--glass-1), var(--glass-2));
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .music-panel[hidden] { display: none; }
+
+  .music-panel label,
+  .music-panel-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    font-weight: 600;
+  }
+
+  .music-options {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .music-option {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .music-option:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+  }
+  .music-option.is-active {
+    background: linear-gradient(135deg, rgba(var(--glow),0.28), rgba(var(--glow),0.08));
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(var(--glow), 0.5);
+  }
+
+  .music-panel input[type="range"] {
+    width: 100%;
+    accent-color: rgb(var(--glow));
+    cursor: pointer;
+  }
+
   /* ===== Bố cục chính ===== */
   .page-wrap {
     position: relative;
@@ -242,6 +329,22 @@
   <div class="glow-blob blue"></div>
   <div class="snow-container" id="snow-container"></div>
 
+  <div class="music-widget">
+    <button id="musicBtn" class="music-btn" aria-expanded="false" aria-label="Chọn nhạc nền">🎵</button>
+    <div class="music-panel" id="musicPanel" hidden>
+      <span class="music-panel-label">Chọn nhạc nền</span>
+      <div class="music-options" id="musicOptions" role="listbox" aria-label="Chọn nhạc nền">
+        <button type="button" class="music-option is-active" data-value="off" role="option" aria-selected="true">🔇 Tắt nhạc</button>
+        <button type="button" class="music-option" data-value="track1" role="option" aria-selected="false">Worry - LONOWN</button>
+        <button type="button" class="music-option" data-value="track2" role="option" aria-selected="false">Спокойная ночь - Кино</button>
+      </div>
+      <label for="volumeSlider">Âm lượng</label>
+      <input type="range" id="volumeSlider" min="0" max="100" value="40">
+    </div>
+    <audio id="audioTrack1" src="music/Worry - LONOWN.mp3" loop preload="none"></audio>
+    <audio id="audioTrack2" src="Спокойная ночь - Кино.mp3" loop preload="none"></audio>
+  </div>
+
   <div class="page-wrap">
     <div class="counter">
       <div class="time-box"><div class="number" id="d">00</div><div class="label">Ngày</div></div>
@@ -308,6 +411,49 @@
       fragment.appendChild(flake);
     }
     container.appendChild(fragment);
+  })();
+
+  // ==================== NHẠC NỀN ====================
+  (function initMusic() {
+    const btn = document.getElementById('musicBtn');
+    const panel = document.getElementById('musicPanel');
+    const options = document.querySelectorAll('.music-option');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const audioEls = {
+      track1: document.getElementById('audioTrack1'),
+      track2: document.getElementById('audioTrack2'),
+    };
+
+    function stopAllFileTracks() {
+      Object.values(audioEls).forEach(a => { a.pause(); a.currentTime = 0; });
+    }
+
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+    });
+
+    options.forEach(opt => {
+      opt.addEventListener('click', () => {
+        options.forEach(o => { o.classList.remove('is-active'); o.setAttribute('aria-selected', 'false'); });
+        opt.classList.add('is-active');
+        opt.setAttribute('aria-selected', 'true');
+
+        const val = opt.dataset.value;
+        stopAllFileTracks();
+
+        if (audioEls[val]) {
+          audioEls[val].volume = volumeSlider.value / 100;
+          audioEls[val].play().catch(() => {});
+        }
+      });
+    });
+
+    volumeSlider.addEventListener('input', () => {
+      const v = volumeSlider.value / 100;
+      Object.values(audioEls).forEach(a => a.volume = v);
+    });
   })();
 </script>
 </body>
