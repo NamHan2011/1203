@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
-<title>Lotus:3</title>
+<title>Đếm Thời Gian</title>
 <style>
   :root {
     --glow: 244, 114, 182; /* hồng sen - lotus pink */
@@ -25,18 +25,20 @@
   /* ===== Nền lưới caro di chuyển lên ===== */
   .grid-bg {
     position: fixed;
-    inset: 0;
+    top: -42px; left: 0; right: 0; bottom: -42px;
     background-image:
       linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
     background-size: 42px 42px;
     animation: gridMove 6s linear infinite;
+    will-change: transform;
+    contain: strict;
     z-index: 0;
   }
 
   @keyframes gridMove {
-    from { background-position: 0 0; }
-    to   { background-position: 0 -42px; }
+    from { transform: translateY(0); }
+    to   { transform: translateY(-42px); }
   }
 
   /* ===== Quầng sáng nền cho chiều sâu kiểu "liquid glass" ===== */
@@ -66,6 +68,7 @@
     z-index: 1;
     overflow: hidden;
     pointer-events: none;
+    contain: strict;
     filter: drop-shadow(0 0 6px rgba(255,255,255,0.45));
   }
 
@@ -111,15 +114,6 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .subtitle {
-    color: rgba(255,255,255,0.5);
-    letter-spacing: 3px;
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
-    text-transform: uppercase;
-  }
-
   .counter {
     display: flex;
     gap: 22px;
@@ -161,24 +155,27 @@
     top: -50%; left: -60%;
     width: 40%; height: 220%;
     background: linear-gradient(120deg, transparent, rgba(255,255,255,0.16), transparent);
-    transform: rotate(20deg);
+    transform: rotate(20deg) translateX(0%);
+    will-change: transform;
     animation: shimmer 6s ease-in-out infinite;
   }
 
   @keyframes shimmer {
-    0%   { left: -60%; }
-    50%  { left: 130%; }
-    100% { left: 130%; }
+    0%   { transform: rotate(20deg) translateX(0%); }
+    50%  { transform: rotate(20deg) translateX(475%); }
+    100% { transform: rotate(20deg) translateX(475%); }
   }
 
-  .time-box:hover {
-    transform: translateY(-8px) scale(1.04);
-    border-color: rgba(var(--glow), 0.65);
-    box-shadow:
-      0 20px 55px rgba(var(--glow), 0.35),
-      0 0 70px rgba(var(--glow), 0.25),
-      inset 0 1px 1px rgba(255,255,255,0.3),
-      inset 0 -1px 1px rgba(var(--glow), 0.15);
+  @media (hover: hover) and (pointer: fine) {
+    .time-box:hover {
+      transform: translateY(-8px) scale(1.04);
+      border-color: rgba(var(--glow), 0.65);
+      box-shadow:
+        0 20px 55px rgba(var(--glow), 0.35),
+        0 0 70px rgba(var(--glow), 0.25),
+        inset 0 1px 1px rgba(255,255,255,0.3),
+        inset 0 -1px 1px rgba(var(--glow), 0.15);
+    }
   }
 
   .number {
@@ -192,8 +189,26 @@
     white-space: nowrap;
   }
 
-  .time-box:hover .number {
-    text-shadow: 0 0 24px rgba(255,255,255,0.9), 0 0 60px rgba(var(--glow), 0.6);
+  @media (hover: hover) and (pointer: fine) {
+    .time-box:hover .number {
+      text-shadow: 0 0 24px rgba(255,255,255,0.9), 0 0 60px rgba(var(--glow), 0.6);
+    }
+  }
+
+  /* ===== Trên di động: hiệu ứng khi chạm thay cho hover ===== */
+  @media (hover: none) {
+    .time-box:active {
+      transform: scale(0.97);
+      border-color: rgba(var(--glow), 0.6);
+      box-shadow:
+        0 10px 40px rgba(0,0,0,0.4),
+        0 0 40px rgba(var(--glow), 0.3),
+        inset 0 1px 1px rgba(255,255,255,0.3),
+        inset 0 -1px 1px rgba(var(--glow), 0.15);
+    }
+    .time-box:active .number {
+      text-shadow: 0 0 20px rgba(255,255,255,0.7), 0 0 40px rgba(var(--glow), 0.5);
+    }
   }
 
   .number.tick { animation: pulse 0.4s ease; }
@@ -217,16 +232,8 @@
     .number { font-size: 34px; }
     .label { font-size: 10px; letter-spacing: 2px; }
     .counter { gap: 12px; }
-    .subtitle { font-size: 10px; letter-spacing: 2px; padding: 0 10px; }
   }
 
-  /* ===== Tôn trọng người dùng muốn giảm chuyển động ===== */
-  @media (prefers-reduced-motion: reduce) {
-    .grid-bg, .time-box::before, .page-wrap { animation: none; }
-    .number.tick { animation: none; }
-    .time-box, .time-box:hover { transition: none; }
-    .snow { animation-play-state: paused; }
-  }
 </style>
 </head>
 <body>
@@ -236,7 +243,6 @@
   <div class="snow-container" id="snow-container"></div>
 
   <div class="page-wrap">
-    <p class="subtitle"></p>
     <div class="counter">
       <div class="time-box"><div class="number" id="d">00</div><div class="label">Ngày</div></div>
       <div class="time-box"><div class="number" id="h">00</div><div class="label">Giờ</div></div>
@@ -276,10 +282,11 @@
 
   // ==================== HIỆU ỨNG TUYẾT RƠI ====================
   (function initSnow() {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const container = document.getElementById('snow-container');
-    const COUNT = 150;   // số bông tuyết — tăng/giảm để dày/thưa hơn
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    const COUNT = isMobile ? 60 : 150;  // ít bông tuyết hơn trên di động để mượt hơn
     const VARIANTS = 6;  // khớp với @keyframes fall-1..fall-6
+    const fragment = document.createDocumentFragment();
 
     for (let i = 0; i < COUNT; i++) {
       const flake = document.createElement('div');
@@ -293,18 +300,14 @@
       const opacity = (Math.random() * 0.6 + 0.3).toFixed(2);
       const variant = Math.ceil(Math.random() * VARIANTS);
 
-      flake.style.setProperty('--x', x + 'vw');
-      flake.style.setProperty('--x-end', (x + drift) + 'vw');
-      flake.style.setProperty('--x-mid', (x + drift / 2) + 'vw');
-      flake.style.setProperty('--size', size + 'px');
-      flake.style.setProperty('--o', opacity);
-      flake.style.setProperty('--duration', duration + 's');
-      flake.style.setProperty('--delay', delay + 's');
-      flake.style.animationName = 'fall-' + variant;
-      if (reduceMotion) flake.style.animationPlayState = 'paused';
+      flake.style.cssText =
+        `--x:${x}vw;--x-end:${x + drift}vw;--x-mid:${x + drift / 2}vw;` +
+        `--size:${size}px;--o:${opacity};--duration:${duration}s;--delay:${delay}s;` +
+        `animation-name:fall-${variant}`;
 
-      container.appendChild(flake);
+      fragment.appendChild(flake);
     }
+    container.appendChild(fragment);
   })();
 </script>
 </body>
